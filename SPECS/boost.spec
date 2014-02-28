@@ -34,7 +34,7 @@ Name: boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.53.0
 %define version_enc 1_53_0
-Release: 14%{?dist}
+Release: 18%{?dist}
 License: Boost and MIT and Python
 
 %define toplev_dirname %{name}_%{version_enc}
@@ -197,6 +197,12 @@ Patch52: boost-1.54.0-thread-cond_variable_shadow.patch
 
 # This was already fixed upstream, so no tracking bug.
 Patch53: boost-1.54.0-pool-max_chunks_shadow.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1018355
+Patch54: boost-1.53.0-mpi-version_type.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1070789
+Patch55: boost-1.53.0-buildflags.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -660,6 +666,8 @@ a number of significant features and is now developed independently
 %patch51 -p1
 %patch52 -p1
 %patch53 -p1
+%patch54 -p1
+%patch55 -p1
 
 # At least python2_version needs to be a macro so that it's visible in
 # %%install as well.
@@ -679,7 +687,7 @@ a number of significant features and is now developed independently
 cat >> ./tools/build/v2/user-config.jam << EOF
 # There are many strict aliasing warnings, and it's not feasible to go
 # through them all at this time.
-using gcc : : : <compileflags>-fno-strict-aliasing ;
+using gcc : : : <compileflags>"$RPM_OPT_FLAGS -fno-strict-aliasing" ;
 using mpi ;
 %if %{with python3}
 # This _adds_ extra python version.  It doesn't replace whatever
@@ -1231,6 +1239,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/bjam.1*
 
 %changelog
+* Fri Feb 28 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-18
+- Turn off build flags pre-set by Boost distribution.
+  (boost-1.53.0-buildflags.patch)
+- Pass RPM_OPT_FLAGS through user-config.jam.
+
+* Wed Feb 19 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-15
+- Fix misunderstanding of Boost.MPI about widths of some
+  Boost.Serialization types.  (boost-1.53.0-mpi-version_type.patch)
+
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.53.0-16
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.53.0-15
+- Mass rebuild 2013-12-27
+
 * Wed Oct  2 2013 Petr Machata <pmachata@redhat.com> - 1.53.0-14
 - MPICH2 became MPICH -- rename subpackages, dependencies and
   conditionals.
