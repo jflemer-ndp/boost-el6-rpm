@@ -5,13 +5,13 @@
 %define boost_docdir __tmp_docdir
 %define boost_examplesdir __tmp_examplesdir
 
-%ifarch %{arm}
+%ifarch %{arm} ppc64le
   %bcond_with mpich
 %else
   %bcond_without mpich
 %endif
 
-%ifarch s390 s390x %{arm}
+%ifarch s390 s390x %{arm} ppc64le
   # No OpenMPI support on these arches
   %bcond_with openmpi
 %else
@@ -34,7 +34,7 @@ Name: boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.53.0
 %define version_enc 1_53_0
-Release: 18%{?dist}
+Release: 23%{?dist}
 License: Boost and MIT and Python
 
 %define toplev_dirname %{name}_%{version_enc}
@@ -203,6 +203,14 @@ Patch54: boost-1.53.0-mpi-version_type.patch
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1070789
 Patch55: boost-1.53.0-buildflags.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1002578
+# https://svn.boost.org/trac/boost/ticket/9065
+Patch56: boost-1.54.0-interprocess-atomic_cas32-ppc.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1134058
+# https://svn.boost.org/trac/boost/ticket/7421
+Patch57: boost-1.53.0-lexical_cast.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -668,6 +676,8 @@ a number of significant features and is now developed independently
 %patch53 -p1
 %patch54 -p1
 %patch55 -p1
+%patch56 -p1
+%patch57 -p2
 
 # At least python2_version needs to be a macro so that it's visible in
 # %%install as well.
@@ -1239,6 +1249,19 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/bjam.1*
 
 %changelog
+* Mon Sep 22 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-23
+- Fix ambiguity in Boost.LexicalCast.
+
+* Wed Sep 10 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-22
+- Re-enable mpich and openmpi on aarch64, they are available now.
+
+* Fri Aug 22 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-21
+- Fix atomic_cas32 (thanks Jaroslav Škarvada for figuring out where
+  the problem is) (boost-1.54.0-interprocess-atomic_cas32-ppc.patch)
+
+* Fri Aug  8 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-20
+- Disable mpich and openmpi support for ppc64le until port available.
+
 * Fri Feb 28 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-18
 - Turn off build flags pre-set by Boost distribution.
   (boost-1.53.0-buildflags.patch)
@@ -1247,6 +1270,9 @@ rm -rf $RPM_BUILD_ROOT
 * Wed Feb 19 2014 Petr Machata <pmachata@redhat.com> - 1.53.0-15
 - Fix misunderstanding of Boost.MPI about widths of some
   Boost.Serialization types.  (boost-1.53.0-mpi-version_type.patch)
+
+* Tue Feb 4 2014 Brendan Conoboy <blc@redhat.com> - 1.53.0-16.1
+- Disable mpich and openmpi support for aarch64 until port available.
 
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.53.0-16
 - Mass rebuild 2014-01-24
