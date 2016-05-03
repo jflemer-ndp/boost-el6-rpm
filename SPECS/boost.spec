@@ -8,7 +8,11 @@
 %ifarch %{arm} ppc64le
   %bcond_with mpich
 %else
-  %bcond_without mpich
+  %if 0%{?rhel} >= 7
+    %bcond_without mpich
+  %else
+    %bcond_with mpich
+  %endif
 %endif
 
 %ifarch s390 s390x %{arm} ppc64le
@@ -34,7 +38,7 @@ Name: boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.53.0
 %define version_enc 1_53_0
-Release: 25%{?dist}
+Release: 26.ndp1%{?dist}
 License: Boost and MIT and Python
 
 %define toplev_dirname %{name}_%{version_enc}
@@ -688,6 +692,10 @@ a number of significant features and is now developed independently
 %endif
 
 %build
+set +e
+test -e /opt/rh/devtoolset-3/enable && . /opt/rh/devtoolset-3/enable
+test -e /opt/rh/devtoolset-4/enable && . /opt/rh/devtoolset-4/enable
+set -e
 : PYTHON2_VERSION=%{python2_version}
 %if %{with python3}
 : PYTHON3_VERSION=%{python3_version}
@@ -1249,6 +1257,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/bjam.1*
 
 %changelog
+* Tue May 03 2016 James E. Flemer <james.flemer@ndpgroup.com> - 1.53.0-26.ndp1
+- Default to no mpich on EL6
+- Use devtoolset if present
+
 * Tue Sep 01 2015 Jonathan Wakely <jwakely@redhat.com> - 1.53.0-25
 - Rebuilt for openmpi update (#1258794)
 
